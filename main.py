@@ -1,46 +1,11 @@
 from fastapi import FastAPI, HTTPException
-from schemas import Product
+from routers.products import router as products_router
+from routers.llm import router as products_router
 
 app = FastAPI()
-products: dict[int, Product] = {}
-next_id = 1
+app.include_router(products_router)
 
 @app.get("/")
 def home():
     return  {"message": "Hola Mundo"}
 
-@app.get("/products")
-def get_products(limit: int = 10):
-    return list(products.values())[:limit]
-
-@app.get("/products/{product_id}")
-def get_product(product_id: int):
-    product = products.get(product_id)
-    
-    if not product:
-        raise HTTPException(
-            status_code=404,
-            detail="Producto no encontrado."
-        )
-    
-    return product
-
-@app.post("/products", status_code=201)
-def create_product(product: Product):
-    global next_id
-    product.id = next_id
-    products[next_id] = product
-    next_id += 1
-    return product
-
-@app.delete("/products/{product_id}")
-def delete_product(product_id: int):    
-    product = products.pop(product_id, None)
-    
-    if not product:
-        raise HTTPException(
-            status_code=400,
-            detail="Producto no encontrado."
-        )
-    
-    return product
